@@ -2,3 +2,4 @@ data/raw/
 reference/
 results/aligned/
 logs/
+data/sra_run_table.csv
