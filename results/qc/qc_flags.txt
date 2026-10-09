@@ -1,0 +1,6 @@
+FAIL	Per base sequence content	SRR7426784.fastq.gz
+FAIL	Sequence Duplication Levels	SRR7426784.fastq.gz
+FAIL	Per base sequence content	SRR7426785.fastq.gz
+FAIL	Sequence Duplication Levels	SRR7426785.fastq.gz
+FAIL	Per base sequence content	SRR7426786.fastq.gz
+FAIL	Sequence Duplication Levels	SRR7426786.fastq.gz
