@@ -56,3 +56,38 @@ rule hisat2_alignment:
         "logs/hisat2/{sample}.log"
     shell:
         "hisat2 -x {params.index} -U {input} -S {output} -p {threads} --summary-file {log}"
+
+    # Sort SAM into BAM
+rule sort_bam:
+    input:
+        "results/aligned/{sample}.sam"
+    output:
+        "results/aligned/{sample}_sorted.bam"
+    threads: 2
+    shell:
+        "samtools sort {input} -o {output} -@ {threads}"
+
+# Remove mitochondrial reads
+rule remove_mitoch:
+    input:
+        "results/aligned/{sample}_sorted.bam"
+    output:
+        "results/aligned/{sample}_nomito.bam"
+    threads: 2
+    shell:
+        "samtools view -b -e 'rname !=\"MT\"' {input} -o {output} -@ {threads}"
+
+# Before and after mitochondrial read removal stats
+rule mito_stats:
+    input:
+        before = "results/aligned/{sample}_sorted.bam",
+        after = "results/aligned/{sample}_nomito.bam"
+    output: 
+        "results/qc/{sample}_mito_stats.txt"
+    shell:
+        """
+        echo 'Before mitochondrial read removal:' > {output}
+        samtools flagstat {input.before} >> {output}
+        echo 'After mitochondrial read removal:' >> {output}
+        samtools flagstat {input.after} >> {output}
+        """
