@@ -91,3 +91,26 @@ rule mito_stats:
         echo 'After mitochondrial read removal:' >> {output}
         samtools flagstat {input.after} >> {output}
         """
+
+# BAM index
+rule index_bam:
+    input:
+        "results/aligned/{sample}_nomito.bam"
+    output:
+        "results/aligned/{sample}_nomito.bam.bai"
+    threads: 2
+    shell:
+        "samtools index {input} -@ {threads}"
+
+# featureCounts
+rule featurecounts:
+    input:
+        bams = expand("results/aligned/{sample}_nomito.bam", sample=TEST_SAMPLES),
+        bais = expand("results/aligned/{sample}_nomito.bam.bai", sample=TEST_SAMPLES)
+    output:
+        "results/counts/featurecounts_matrix.txt"
+    params:
+        gtf = GTF
+    threads: 4
+    shell:
+        "featureCounts -a {params.gtf} -o {output} -T {threads} {input.bams}"
