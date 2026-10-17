@@ -1,0 +1,15 @@
+Status	results/aligned/SRR7426784_nomito.bam	results/aligned/SRR7426785_nomito.bam	results/aligned/SRR7426786_nomito.bam	results/aligned/SRR7426787_nomito.bam
+Assigned	22916382	27082759	32262525	26978760
+Unassigned_Unmapped	579206	504378	674071	570111
+Unassigned_Read_Type	0	0	0	0
+Unassigned_Singleton	0	0	0	0
+Unassigned_MappingQuality	0	0	0	0
+Unassigned_Chimera	0	0	0	0
+Unassigned_FragmentLength	0	0	0	0
+Unassigned_Duplicate	0	0	0	0
+Unassigned_MultiMapping	11664981	11816430	15586531	16168506
+Unassigned_Secondary	0	0	0	0
+Unassigned_NonSplit	0	0	0	0
+Unassigned_NoFeatures	1627923	1649699	2989429	2101215
+Unassigned_Overlapping_Length	0	0	0	0
+Unassigned_Ambiguity	2745844	3354417	4252130	3473012
