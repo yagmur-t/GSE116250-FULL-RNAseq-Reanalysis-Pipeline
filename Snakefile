@@ -1,4 +1,4 @@
-TEST_SAMPLES = ["SRR7426784", "SRR7426785", "SRR7426786"]
+TEST_SAMPLES = ["SRR7426784", "SRR7426785", "SRR7426786", "SRR7426787"]
 GENOME_INDEX = "reference/grch38_tran/genome_tran"
 GTF = "reference/Homo_sapiens.GRCh38.115.gtf"
 
@@ -25,7 +25,7 @@ rule multiqc:
         indir = "results/qc/",
         outdir = "results/qc/"
     shell:
-        "multiqc {params.indir} -o {params.outdir}"
+        "multiqc -f {params.indir} -o {params.outdir}"
 
 # QC Quality Control, flag failed samples
 rule flag_qc_fails:
@@ -51,7 +51,7 @@ rule hisat2_alignment:
         "results/aligned/{sample}.sam"
     params:
         index = GENOME_INDEX
-    threads: 4
+    threads: 8
     log:
         "logs/hisat2/{sample}.log"
     shell:
