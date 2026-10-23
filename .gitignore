@@ -6,3 +6,5 @@ data/sra_run_table.csv
 results/qc/*_fastqc.html
 results/qc/*_fastqc.zip
 .snakemake/
+data/batches/
+scripts/download_batch.sh

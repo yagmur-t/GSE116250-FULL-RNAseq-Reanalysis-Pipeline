@@ -63,7 +63,7 @@ rule sort_bam:
         "results/aligned/{sample}.sam"
     output:
         "results/aligned/{sample}_sorted.bam"
-    threads: 2
+    threads: 4
     shell:
         "samtools sort {input} -o {output} -@ {threads}"
 
@@ -73,7 +73,7 @@ rule remove_mitoch:
         "results/aligned/{sample}_sorted.bam"
     output:
         "results/aligned/{sample}_nomito.bam"
-    threads: 2
+    threads: 4
     shell:
         "samtools view -b -e 'rname !=\"MT\"' {input} -o {output} -@ {threads}"
 
