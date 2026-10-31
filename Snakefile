@@ -1,6 +1,41 @@
-TEST_SAMPLES = ["SRR7426784", "SRR7426785", "SRR7426786", "SRR7426787"]
 GENOME_INDEX = "reference/grch38_tran/genome_tran"
 GTF = "reference/Homo_sapiens.GRCh38.115.gtf"
+
+if "batch" in config:
+# Read the selected batch.
+    batch_id = int(config["batch"])
+    batch_path = f"data/batches/batch_{batch_id:02d}.txt"
+
+    with open(batch_path) as batch_file:
+        batch_samples = [
+            line.strip()
+            for line in batch_file
+            if line.strip()
+        ]
+
+# Request the final index files for this batch.
+    rule batch:
+        input:
+            expand( "results/aligned/{sample}_nomito.bam.bai", sample=batch_samples)
+
+# MultiQC
+    rule multiqc:
+        input:
+            expand("results/qc/{sample}_fastqc.zip", sample=batch_samples)
+        output:
+            f"results/qc/batch_{batch_id:02d}/multiqc_report.html"
+        params:
+            outdir = f"results/qc/batch_{batch_id:02d}/"
+        shell:
+            "multiqc -f {input:q} -o {params.outdir:q}"
+
+# Construct the all samples list
+with open("data/batches/all_samples.txt") as samples_file:
+    all_samples = [
+        line.strip()
+        for line in samples_file
+        if line.strip()
+    ]
 
 # FastQC on raw reads
 rule fastqc:
@@ -15,33 +50,17 @@ rule fastqc:
     shell:
         "fastqc {input} -o {params.outdir} -t {threads}"
 
-# MultiQC
-rule multiqc:
-    input:
-        expand("results/qc/{sample}_fastqc.zip", sample=TEST_SAMPLES)
-    output:
-        "results/qc/multiqc_report.html"
-    params:
-        indir = "results/qc/",
-        outdir = "results/qc/"
-    shell:
-        "multiqc -f {params.indir} -o {params.outdir}"
 
-# QC Quality Control, flag failed samples
-rule flag_qc_fails:
+# MultiQC for all samples
+rule multiqc_all:
     input:
-        expand("results/qc/{sample}_fastqc.zip", sample=TEST_SAMPLES)
+        expand("results/qc/{sample}_fastqc.zip", sample=all_samples)
     output:
-        "results/qc/qc_flags.txt"
+        "results/qc/all_samples/multiqc_report.html"
+    params:
+        outdir = "results/qc/all_samples/"
     shell:
-        """
-        > {output}
-        for sample_zip in {input}
-        do
-            sample=$(basename $sample_zip _fastqc.zip)
-            unzip -p $sample_zip ${{sample}}_fastqc/summary.txt | grep FAIL >> {output}
-        done
-        """
+        "multiqc -f {input:q} -o {params.outdir:q}"
 
 # HISAT2 alignment
 rule hisat2_alignment:
@@ -105,8 +124,8 @@ rule index_bam:
 # featureCounts
 rule featurecounts:
     input:
-        bams = expand("results/aligned/{sample}_nomito.bam", sample=TEST_SAMPLES),
-        bais = expand("results/aligned/{sample}_nomito.bam.bai", sample=TEST_SAMPLES)
+        bams = expand("results/aligned/{sample}_nomito.bam", sample=batch_samples),
+        bais = expand("results/aligned/{sample}_nomito.bam.bai", sample=batch_samples)
     output:
         "results/counts/featurecounts_matrix.txt"
     params:
