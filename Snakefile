@@ -16,7 +16,7 @@ if "batch" in config:
 # Request the final index files for this batch.
     rule batch:
         input:
-            expand( "results/aligned/{sample}_nomito.bam.bai", sample=batch_samples)
+            expand( "results/aligned/{sample}_sorted.bam.bai", sample=batch_samples)
 
 # MultiQC
     rule multiqc:
@@ -74,7 +74,7 @@ rule hisat2_alignment:
     log:
         "logs/hisat2/{sample}.log"
     shell:
-        "hisat2 -x {params.index} -U {input} -S {output} -p {threads} --summary-file {log}"
+        "hisat2 -x {params.index} -U {input} -S {output} -p {threads} --summary-file {log} --rna-strandness R"
 
     # Sort SAM into BAM
 rule sort_bam:
@@ -86,7 +86,7 @@ rule sort_bam:
     shell:
         "samtools sort {input} -o {output} -@ {threads}"
 
-# Remove mitochondrial reads
+# Remove mitochondrial reads (optional)
 rule remove_mitoch:
     input:
         "results/aligned/{sample}_sorted.bam"
@@ -96,7 +96,7 @@ rule remove_mitoch:
     shell:
         "samtools view -b -e 'rname !=\"MT\"' {input} -o {output} -@ {threads}"
 
-# Before and after mitochondrial read removal stats
+# Before and after mitochondrial read removal stats (optional)
 rule mito_stats:
     input:
         before = "results/aligned/{sample}_sorted.bam",
@@ -114,9 +114,9 @@ rule mito_stats:
 # BAM index
 rule index_bam:
     input:
-        "results/aligned/{sample}_nomito.bam"
+        "results/aligned/{sample}_sorted.bam"
     output:
-        "results/aligned/{sample}_nomito.bam.bai"
+        "results/aligned/{sample}_sorted.bam.bai"
     threads: 2
     shell:
         "samtools index {input} -@ {threads}"
@@ -124,12 +124,12 @@ rule index_bam:
 # featureCounts
 rule featurecounts:
     input:
-        bams = expand("results/aligned/{sample}_nomito.bam", sample=batch_samples),
-        bais = expand("results/aligned/{sample}_nomito.bam.bai", sample=batch_samples)
+        bams = expand("results/aligned/{sample}_sorted.bam", sample=all_samples),
+        bais = expand("results/aligned/{sample}_sorted.bam.bai", sample=all_samples)
     output:
         "results/counts/featurecounts_matrix.txt"
     params:
         gtf = GTF
     threads: 4
     shell:
-        "featureCounts -a {params.gtf} -o {output} -T {threads} {input.bams}"
+        "featureCounts -a {params.gtf:q} -o {output:q} -T {threads} -s 2 {input.bams:q}"
