@@ -72,9 +72,12 @@ rule hisat2_alignment:
         index = GENOME_INDEX
     threads: 8
     log:
-        "logs/hisat2/{sample}.log"
+        summary = "logs/hisat2/{sample}.summary.txt",
+        stderr = "logs/hisat2/{sample}.stderr.log"
     shell:
-        "hisat2 -x {params.index} -U {input} -S {output} -p {threads} --summary-file {log} --rna-strandness R"
+        "hisat2 -x {params.index:q} -U {input:q} -S {output:q} " 
+        "-p {threads} --rna-strandness R "
+        "--summary-file {log.summary:q} 2> {log.stderr:q}"
 
     # Sort SAM into BAM
 rule sort_bam:
@@ -83,8 +86,11 @@ rule sort_bam:
     output:
         "results/aligned/{sample}_sorted.bam"
     threads: 4
+    log:
+        "logs/samtools/{sample}_sort.log"
     shell:
-        "samtools sort {input} -o {output} -@ {threads}"
+        "samtools sort {input:q} -o {output:q} -@ {threads} "
+        "-m 512M 2> {log:q}"
 
 # Remove mitochondrial reads (optional)
 rule remove_mitoch:
@@ -119,7 +125,7 @@ rule index_bam:
         "results/aligned/{sample}_sorted.bam.bai"
     threads: 2
     shell:
-        "samtools index {input} -@ {threads}"
+        "samtools index {input:q} -@ {threads:q}"
 
 # featureCounts
 rule featurecounts:
