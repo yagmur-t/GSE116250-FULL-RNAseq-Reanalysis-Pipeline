@@ -9,3 +9,4 @@ results/qc/*_fastqc.zip
 data/batches/
 scripts/download_batch.sh
 SRR7426788.resources.txt
+results/qc/batch_*
