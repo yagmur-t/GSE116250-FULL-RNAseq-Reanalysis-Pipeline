@@ -67,7 +67,7 @@ rule hisat2_alignment:
     input:
         "data/raw/{sample}.fastq.gz"
     output:
-        "results/aligned/{sample}.sam"
+        temp("results/aligned/{sample}.sam")
     params:
         index = GENOME_INDEX
     threads: 8
