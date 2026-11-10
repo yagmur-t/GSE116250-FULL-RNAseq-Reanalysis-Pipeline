@@ -1,5 +1,11 @@
 GENOME_INDEX = "reference/grch38_tran/genome_tran"
 GTF = "reference/Homo_sapiens.GRCh38.115.gtf"
+PILOT_SAMPLES = [
+    "SRR7426788",
+    "SRR7426794",
+    "SRR7426798",
+    "SRR7426803"
+]
 
 if "batch" in config:
 # Read the selected batch.
@@ -131,11 +137,24 @@ rule index_bam:
 rule featurecounts:
     input:
         bams = expand("results/aligned/{sample}_sorted.bam", sample=all_samples),
-        bais = expand("results/aligned/{sample}_sorted.bam.bai", sample=all_samples)
+        bais = expand("results/aligned/{sample}_sorted.bam.bai", sample=all_samples),
+        gtf = GTF
     output:
         "results/counts/featurecounts_matrix.txt"
-    params:
-        gtf = GTF
     threads: 4
     shell:
-        "featureCounts -a {params.gtf:q} -o {output:q} -T {threads} -s 2 {input.bams:q}"
+        "featureCounts -a {input.gtf:q} -o {output:q} "
+        "-T {threads} -s 2 -t exon -g gene_id {input.bams:q}"
+
+rule featureCounts_pilot:
+    input:
+        bams = expand("results/aligned/{sample}_sorted.bam", sample=PILOT_SAMPLES),
+        bais = expand("results/aligned/{sample}_sorted.bam.bai", sample=PILOT_SAMPLES),
+        gtf = GTF
+    output:
+        counts = "results/counts/pilot/featurecounts_matrix.txt",
+        summary = "results/counts/pilot/featurecounts_matrix.txt.summary"
+    threads: 4
+    shell:
+        "featureCounts -a {input.gtf:q} -o {output.counts:q} "
+        "-T {threads} -s 2 -t exon -g gene_id {input.bams:q}"
